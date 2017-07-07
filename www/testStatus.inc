@@ -16,7 +16,7 @@ function GetTestStatus($id, $includePosition = true) {
   
   if (isset($_REQUEST['noposition']) && $_REQUEST['noposition'])
     $includePosition = false;
-  $testPath = './' . GetTestPath($id);
+  $testPath = GetTestPath($id);
   
   // Fast-path for pending tests when we don't need to know the queue position (avoid test and location locks)
   $waiting_file = "$testPath/test.waiting";
@@ -250,7 +250,7 @@ function GetTestStatusText($id) {
 function GetBatchStatus(&$status) {
     $dirty = false;
     $id = $status['testId'];
-    $testPath = './' . GetTestPath($id);
+    $testPath = GetTestPath($id);
     if (gz_is_file("$testPath/bulk.json"))
         $tests = json_decode(gz_file_get_contents("$testPath/bulk.json"), true);
     elseif (gz_is_file("$testPath/tests.json")) {
@@ -273,7 +273,7 @@ function GetBatchStatus(&$status) {
             else {
                 $complete = true;
                 $id = $test['id'];
-                $testPath = './' . GetTestPath($id);
+                $testPath = GetTestPath($id);
                 $testInfo = GetTestInfo($id);
                 if ($testInfo) {
                   if( $testInfo['started'] )
@@ -286,7 +286,7 @@ function GetBatchStatus(&$status) {
 
                 // go through all of the variations as well
                 foreach ($test['v'] as $variationId) {
-                    $testPath = './' . GetTestPath($variationId);
+                    $testPath = GetTestPath($variationId);
                     $testInfo = GetTestInfo($variationId);
                     if ($testInfo) {
                       if ($testInfo['started'])
@@ -332,6 +332,7 @@ function GetBatchStatus(&$status) {
 * Get the status of a test from a remote relay
 */
 function GetRelayStatus($id, $testPath, &$test) {
+    $tmp_dir = GetSetting('tmp_dir');
     $ret = null;
     $locations = LoadLocationsIni();
     $location = $test['location'];
@@ -345,7 +346,7 @@ function GetRelayStatus($id, $testPath, &$test) {
     if (is_array($status)) {
         if ($status['statusCode'] == 200) {
             // download the test result and delete it from the relay server
-            $tmp = tempnam(realpath('./tmp'), 'relay');
+            $tmp = tempnam(realpath($tmp_dir), 'relay');
             if (file_put_contents($tmp, http_fetch("{$server}download.php?test=$id&rkey=$key"))) {
                 $zip = new ZipArchive();
                 if ($zip->open($tmp) === true) {

@@ -8,6 +8,8 @@ if( !$days || $days > 1000 )
     $days = 7;
 
 $title = 'WebPagetest - Usage';
+$dat_dir = GetSetting('dat_dir');
+$logs_dir = GetSetting('logs_dir');
 
 include 'admin_header.inc';
 ?>
@@ -34,7 +36,7 @@ include 'admin_header.inc';
             $day = gmdate('Ymd');
             if( strlen($req_date) )
                 $day = $req_date;
-            $keyfile = "./dat/keys_$day.dat";
+            $keyfile = $dat_dir . "/keys_$day.dat";
             $usage = null;
             if( is_file($keyfile) )
               $usage = json_decode(file_get_contents($keyfile), true);
@@ -62,7 +64,7 @@ include 'admin_header.inc';
                 echo "<table class=\"table\"><tr><th>Date</th><th>Used</th><th>Limit</th></tr>";
                 $targetDate = new DateTime('now', new DateTimeZone('GMT'));
                 for($offset = 0; $offset <= $days; $offset++) {
-                    $keyfile = './dat/keys_' . $targetDate->format("Ymd") . '.dat';
+                    $keyfile = $dat_dir . '/keys_' . $targetDate->format("Ymd") . '.dat';
                     $usage = null;
                     $used = 0;
                     if( is_file($keyfile) ) {
@@ -90,7 +92,7 @@ include 'admin_header.inc';
         for($offset = 0; $offset <= $days; $offset++)
         {
             // figure out the name of the log file
-            $fileName = './logs/' . $targetDate->format("Ymd") . '.log';
+            $fileName = $logs_dir . $targetDate->format("Ymd") . '.log';
             $file = file($fileName);
             $api = 0;
             $ui = 0;

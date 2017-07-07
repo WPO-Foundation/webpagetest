@@ -26,6 +26,7 @@ function ArchiveSkipFile($file) {
 function ArchiveTest($id, $store_result = true, $delete = false) {
     global $settings;
     global $api_keys;
+    $tmp_dir = GetSetting('tmp_dir');
     $ret = false;
     if ( strpos($id, '.') === false &&                           // make sure it isn't a relay test
         (array_key_exists('archive_dir', $settings) ||           // local mount
@@ -34,7 +35,7 @@ function ArchiveTest($id, $store_result = true, $delete = false) {
         $completed = true;
         if ($status['statusCode'] >= 100 && $status['statusCode'] < 200)
             $completed = false;
-        $testPath = realpath('./' . GetTestPath($id));
+        $testPath = realpath(GetTestPath($id));
         $testInfo = GetTestInfo($id);
         if ($testInfo && ($completed || $testInfo['batch'])) {
             if (GetSetting('archive_dir') == '/dev/null') {
@@ -55,7 +56,7 @@ function ArchiveTest($id, $store_result = true, $delete = false) {
                 $lock = LockTest($id);
                 if (isset($lock)) {
                   $testInfo = GetTestInfo($id);
-                  $zipFile = "./tmp/$id.zip";
+                  $zipFile = $tmp_dir . "/$id.zip";
                   // zip up the contents
                   if (is_dir($testPath) === true) {
                       $count = 0;
@@ -145,9 +146,10 @@ function ArchiveTest($id, $store_result = true, $delete = false) {
 */
 function RestoreArchive($id) {
     $ret = false;
+    $tmp_dir = GetSetting('tmp_dir');
     if (strpos($id, '.') === false && GetSetting('archive_dir') != '/dev/null') {
         global $settings;
-        $testPath = './' . GetTestPath($id);
+        $testPath = GetTestPath($id);
         $url = '';
         // see if we have a http path where the file is archived
         $check_dir = $testPath;
@@ -181,7 +183,7 @@ function RestoreArchive($id) {
             array_key_exists('archive_s3_url', $archive_settings) ||
             array_key_exists('archive_s3_server', $archive_settings)) {
             $deleteZip = true;
-            $zipfile = "./tmp/$id.zip";
+            $zipfile = $tmp_dir . "/$id.zip";
             if (strlen($url)) {
                 $url .= "/$id.zip";
             } else {
@@ -264,7 +266,7 @@ function VerifyArchive($id) {
         if (isset($settings['archive_dir'])) {
             // local
             $valid = false;
-            $testPath = realpath('./' . GetTestPath($id));
+            $testPath = realpath(GetTestPath($id));
             $archive = GetArchiveFile($id);
             if (is_dir($testPath) && is_file($archive)) {
                 chmod($archive, 0777);
@@ -352,7 +354,7 @@ function ArchiveApi($id) {
   // For tests driven through the API, flag them as available for
   // archiving as soon as they are accessed (if the setting is enabled)
   if (GetSetting('archive_api')) {
-    $testPath = realpath('./' . GetTestPath($id));
+    $testPath = realpath(GetTestPath($id));
     touch("$testPath/archive.me");
   }
 }

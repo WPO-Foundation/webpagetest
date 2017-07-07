@@ -44,39 +44,40 @@ $ini = null;
 $title = "WebPagetest - Visual Comparison";
 
 $dir = GetVideoPath($videoId, true);
-if( is_dir("./$dir") )
+
+if( is_dir($dir) )
 {
     $valid = true;
-    if (is_file("./$dir/video.mp4") || is_file("./$dir/video.ini")) {
-        $ini = parse_ini_file("./$dir/video.ini");
-        if( is_file("./$dir/video.mp4") || isset($ini['completed']) )
+    if (is_file($dir . '/video.mp4') || is_file($dir . '/video.ini')) {
+        $ini = parse_ini_file($dir . '/video.ini');
+        if( is_file($dir . '/video.mp4') || isset($ini['completed']) )
         {
             $done = true;
-            GenerateVideoThumbnail("./$dir");
+            GenerateVideoThumbnail($dir);
         }
     }
     
     // get the video time
-    $date = gmdate("M j, Y", filemtime("./$dir"));
-    if( is_file("./$dir/video.mp4")  )
-        $date = gmdate("M j, Y", filemtime("./$dir/video.mp4"));
+    $date = gmdate("M j, Y", filemtime($dir));
+    if( is_file($dir . '/video.mp4')  )
+        $date = gmdate("M j, Y", filemtime($dir . '/video.mp4'));
     $title .= " - $date";
 
-    $labels = json_decode(file_get_contents("./$dir/labels.txt"), true);
+    $labels = json_decode(file_get_contents($dir . '/labels.txt'), true);
     if( count($labels) )
     {
         $title .= ' : ';
         foreach($labels as $index => $label)
         {
             if( $index > 0 )
-                $title .= ", ";
+                $title .= ', ';
             $title .= $label;
         }
     }
     
     $location = null;
-    if (gz_is_file("./$dir/testinfo.json")) {
-        $tests = json_decode(gz_file_get_contents("./$dir/testinfo.json"), true);
+    if (gz_is_file($dir . '/testinfo.json')) {
+        $tests = json_decode(gz_file_get_contents($dir . '/testinfo.json'), true);
         if (is_array($tests) && count($tests)) {
             foreach($tests as &$test) {
                 if (array_key_exists('location', $test)) {
@@ -145,8 +146,8 @@ elseif( $json )
         $ret['data']['videoUrl'] = $videoUrl;
     if (strlen($embedUrl)) {
         $ret['data']['embedUrl'] = $embedUrl;
-        if (is_file("./$dir/video.png")) {
-            list($width, $height) = getimagesize("./$dir/video.png");
+        if (is_file($dir . '/video.png')) {
+            list($width, $height) = getimagesize($dir .'/video.png');
             $ret['data']['width'] = $width;
             $ret['data']['height'] = $height;
         }
@@ -155,6 +156,7 @@ elseif( $json )
 }
 else
 {
+    $videoUrl = str_replace(GetSetting('results_dir'), GetSetting('results_url'), $dir);
 ?>
 <!DOCTYPE html>
 <html>
@@ -293,10 +295,10 @@ else
                 $height = 600;
 
                 $hasThumb = false;
-                if( is_file("./$dir/video.png") )
+                if( is_file($dir . '/video.png') )
                 {
                     $hasThumb = true;
-                    list($width, $height) = getimagesize("./$dir/video.png");
+                    list($width, $height) = getimagesize($dir . '/video.png');
                 }
 
                 if( array_key_exists('width', $_REQUEST) && $_REQUEST['width'] )
@@ -315,9 +317,9 @@ else
                 echo "'plugins':{'controls':{'volume':false,'mute':false,'stop':true,'tooltips':{'buttons':true,'fullscreen':'Enter fullscreen mode'}}},";
                 echo "'canvas':{'backgroundColor':'#000000','backgroundGradient':'none'},";
                 if ($hasThumb) {
-                    echo "'playlist':[{'url':'/$dir/video.png'},{'url':'/$dir/video.mp4','autoPlay':$autoplay,'autoBuffering':false}]";
+                    echo "'playlist':[{'url':'$videoUrl/video.png'},{'url':'$videoUrl/video.mp4','autoPlay':$autoplay,'autoBuffering':false}]";
                 } else {
-                    echo "'playlist':[{'url':'/$dir/video.mp4','autoPlay':$autoplay,'autoBuffering':true}]";
+                    echo "'playlist':[{'url':'$videoUrl/video.mp4','autoPlay':$autoplay,'autoBuffering':true}]";
                 }
                 echo "}\"};\n";
                 echo "_V_.options.flash.params = {
@@ -331,10 +333,10 @@ else
                 echo "<video id=\"player\" class=\"video-js vjs-default-skin\" controls
                   preload=\"auto\" width=\"$width\" height=\"$height\"";
                 if ($hasThumb) {
-                    echo " poster=\"/$dir/video.png\"";
+                    echo " poster=\"$videoUrl/video.png\"";
                 }
                 echo "data-setup=\"{}\">
-                    <source src=\"/$dir/video.mp4\" type='video/mp4'>
+                    <source src=\"$videoUrl/video.mp4\" type='video/mp4'>
                 </video>";
 
                 if(!$embed) {
