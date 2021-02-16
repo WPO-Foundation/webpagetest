@@ -17,6 +17,8 @@ if( strlen($page_description) )
 <link rel="mask-icon" href="/images/favicon/safari-pinned-tab.svg" color="#5bbad5">
 <link rel="shortcut icon" href="/images/favicon/favicon.ico">
 
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <?php 
     if(!isset($noanalytics) && extension_loaded('newrelic'))
         echo @newrelic_get_browser_timing_header();
@@ -30,6 +32,7 @@ if( strlen($page_description) )
       include('./js/user-timing-rum-min.js');
     echo "\n</script>\n";
     echo "<link rel=\"stylesheet\" href=\"{$GLOBALS['cdnPath']}/pagestyle.css?v=" . VER_CSS . "\" type=\"text/css\">\n";
+    echo "<link rel=\"stylesheet\" href=\"{$GLOBALS['cdnPath']}/minimally-responsive.css?v=" . VER_CSS . "\" type=\"text/css\">\n";
     echo "<style type=\"text/css\">\n";
     
     // switch to the private install logo if we're not running on webpagetest
